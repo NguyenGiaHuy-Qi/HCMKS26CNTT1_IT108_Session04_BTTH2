@@ -1,0 +1,233 @@
+# BÁO CÁO PHÂN TÍCH – SHOPEE-LITE
+
+## 1. Phân tích vấn đề FileNotFoundError
+
+Trong dự án Shopee-Lite, các hình ảnh logo được đặt trong thư mục `assets`. Khi gửi toàn bộ project cho bạn, mặc dù đã copy đầy đủ file nhưng máy bạn vẫn báo lỗi `FileNotFoundError`.
+
+Nguyên nhân có thể là do trong code đang sử dụng **đường dẫn tuyệt đối**.
+
+Ví dụ trên máy của mình:
+
+```text
+C:\Users\Nam\Desktop\shopee-lite\assets\logo.png
+```
+
+Đường dẫn này chỉ đúng trên máy của mình. Khi copy sang máy bạn, project có thể nằm ở:
+
+```text
+D:\Projects\shopee-lite\
+```
+
+Lúc này chương trình vẫn tìm đến:
+
+```text
+C:\Users\Nam\Desktop\shopee-lite\assets\logo.png
+```
+
+nhưng đường dẫn đó không tồn tại trên máy bạn nên xảy ra lỗi `FileNotFoundError`.
+
+Vì vậy khi làm project và muốn chia sẻ cho người khác, nên sử dụng **đường dẫn tương đối** thay vì ghi cố định đường dẫn của máy mình.
+
+---
+
+## 2. Sử dụng đường dẫn tương đối
+
+Giả sử cấu trúc project như sau:
+
+```text
+shopee-lite/
+├── main.py
+└── assets/
+    └── logo.png
+```
+
+Nếu file `main.py` cần sử dụng `logo.png`, có thể dùng:
+
+```python
+logo_path = "./assets/logo.png"
+```
+
+Trong đó:
+
+```text
+. → thư mục hiện tại
+```
+
+Nghĩa là chương trình sẽ tìm thư mục `assets` từ vị trí hiện tại của project.
+
+Nếu file đang nằm trong một thư mục con:
+
+```text
+shopee-lite/
+├── main.py
+├── assets/
+│   └── logo.png
+└── src/
+    └── app.py
+```
+
+Từ `src/app.py` muốn đi ra thư mục cha rồi vào `assets`, có thể dùng:
+
+```python
+logo_path = "../assets/logo.png"
+```
+
+Trong đó:
+
+```text
+.. → thư mục cha, đi lên một cấp
+```
+
+### Tóm lại:
+
+```text
+.   → thư mục hiện tại
+..  → thư mục cha
+```
+
+Sử dụng đường dẫn tương đối giúp project dễ di chuyển sang máy khác mà không phải sửa lại đường dẫn.
+
+---
+
+# 3. Phân tích luồng IPO của ứng dụng
+
+IPO là:
+
+> **Input → Process → Output**
+
+Trong trường hợp ứng dụng Shopee-Lite, CPU, RAM và Storage phối hợp với nhau như sau.
+
+### Input
+
+Các file chương trình, hình ảnh logo, dữ liệu... ban đầu được lưu trên **Storage** như SSD/HDD.
+
+Khi chạy chương trình, dữ liệu cần thiết được đọc từ Storage và đưa vào **RAM**.
+
+### Process
+
+Sau khi dữ liệu được đưa vào RAM, **CPU** lấy các lệnh và dữ liệu cần thiết để xử lý.
+
+Ví dụ:
+
+```text
+SSD → RAM → CPU xử lý
+```
+
+CPU có thể xử lý việc đọc dữ liệu, chạy code Python, xử lý hình ảnh và thực hiện các phép tính của chương trình.
+
+### Output
+
+Sau khi CPU xử lý xong, kết quả được đưa ra màn hình hoặc được lưu lại vào Storage.
+
+Ví dụ:
+
+```text
+CPU → RAM → Màn hình / Storage
+```
+
+Có thể hình dung toàn bộ quá trình:
+
+```text
+        INPUT
+          ↓
+       Storage
+          ↓
+          RAM
+          ↓
+         CPU
+       PROCESS
+          ↓
+          RAM
+          ↓
+OUTPUT → Màn hình / Storage
+```
+
+### Vai trò của từng thành phần
+
+- **Storage:** Lưu trữ lâu dài code, hình ảnh, dữ liệu của project.
+- **RAM:** Lưu tạm dữ liệu và chương trình đang chạy để CPU truy cập nhanh.
+- **CPU:** Thực hiện các lệnh và xử lý dữ liệu của chương trình.
+
+---
+
+# 4. Tại sao máy bạn bị treo khi RAM lên 98%?
+
+Khi mở project, nếu RAM sử dụng đến **98%** thì máy gần như không còn nhiều bộ nhớ để sử dụng cho các chương trình khác.
+
+Ví dụ cùng lúc mở:
+
+- VS Code
+- Python
+- Trình duyệt Chrome
+- Các ứng dụng khác
+
+thì lượng RAM sử dụng có thể tăng rất cao.
+
+Khi RAM gần đầy, Windows có thể phải sử dụng thêm bộ nhớ ảo trên ổ đĩa. Tốc độ này thường chậm hơn RAM nên máy có thể bị **lag, phản hồi chậm hoặc treo tạm thời**.
+
+---
+
+# 5. Ba bước xử lý để giảm lag
+
+### Bước 1: Tắt các chương trình không cần thiết
+
+Mở **Task Manager** bằng:
+
+```text
+Ctrl + Shift + Esc
+```
+
+Kiểm tra mục **Memory** và đóng những chương trình đang sử dụng quá nhiều RAM nhưng không cần thiết.
+
+Ví dụ có thể đóng bớt các tab Chrome hoặc ứng dụng đang chạy nền.
+
+### Bước 2: Không mở quá nhiều chương trình cùng lúc
+
+Khi chạy project Python, chỉ nên mở những phần mềm cần thiết như:
+
+```text
+VS Code
+Terminal
+Python
+```
+
+Hạn chế mở quá nhiều ứng dụng hoặc tab trình duyệt cùng lúc.
+
+### Bước 3: Kiểm tra chương trình Python
+
+Nếu RAM vẫn tăng rất cao khi chạy project, cần kiểm tra code xem có:
+
+- Vòng lặp vô hạn.
+- Đọc quá nhiều dữ liệu vào RAM.
+- Tải nhiều hình ảnh cùng lúc.
+- Không giải phóng dữ liệu không còn sử dụng.
+
+Nếu project thực sự cần nhiều RAM thì có thể cân nhắc nâng cấp RAM cho máy.
+
+---
+
+# 6. Kết luận
+
+Qua bài này, em hiểu rằng lỗi `FileNotFoundError` không nhất thiết là do thiếu file. Một nguyên nhân thường gặp là **đường dẫn trong code không phù hợp với máy đang chạy chương trình**.
+
+Đường dẫn tuyệt đối phụ thuộc vào vị trí cụ thể trên từng máy, ví dụ:
+
+```text
+C:\Users\Nam\Desktop\shopee-lite\assets\logo.png
+```
+
+Trong khi đường dẫn tương đối:
+
+```text
+./assets/logo.png
+```
+
+hoặc:
+
+```text
+../assets/logo.png
+```
+
+sẽ linh hoạt hơn khi chia sẻ project.
+
+Ngoài ra, CPU, RAM và Storage có vai trò khác nhau nhưng phối hợp với nhau trong quá trình chạy chương trình. Khi RAM bị sử dụng đến 98%, máy có thể bị lag hoặc treo nên cần kiểm tra và đóng các ứng dụng không cần thiết trước.
